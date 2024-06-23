@@ -81,6 +81,11 @@ class TransactionDetailScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Text(
+                    'Category: ${transaction['category'] ?? 'No category'}',
+                    style: TextStyle(fontSize: 18, color: Colors.black87),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
                     '${transaction['amount'].toStringAsFixed(2)} €',
                     style: TextStyle(
                         fontSize: 22,

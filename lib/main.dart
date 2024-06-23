@@ -33,6 +33,29 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> transactions = [];
   DateTime? startDate;
   DateTime? endDate;
+  String? selectedCategory;
+
+  final List<String> _incomeCategories = [
+    'Salary',
+    'Investment',
+    'Gift',
+    'Freelance',
+    'Other Income'
+  ];
+
+  final List<String> _expenseCategories = [
+    'Housing',
+    'Transportation',
+    'Food',
+    'Health',
+    'Personal Care',
+    'Entertainment',
+    'Education',
+    'Credit',
+    'Pet',
+    'Family',
+    'Other Expenses'
+  ];
 
   @override
   void initState() {
@@ -60,7 +83,8 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _filterTransactions(DateTime? start, DateTime? end) async {
+  void _filterTransactions(
+      DateTime? start, DateTime? end, String? category) async {
     List<Map<String, dynamic>> data = await _dbHelper.getTransactions();
     double income = 0.0;
     double expense = 0.0;
@@ -71,7 +95,10 @@ class _HomePageState extends State<HomePage> {
           start == null || date.isAfter(start.subtract(Duration(days: 1)));
       bool isBeforeEnd =
           end == null || date.isBefore(end.add(Duration(days: 1)));
-      return isAfterStart && isBeforeEnd;
+      bool isCategoryMatch = category == null ||
+          category.isEmpty ||
+          transaction['category'] == category;
+      return isAfterStart && isBeforeEnd && isCategoryMatch;
     }).toList();
 
     for (var transaction in filteredData) {
@@ -99,9 +126,16 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         startDate = picked.start;
         endDate = picked.end;
-        _filterTransactions(startDate, endDate);
+        _filterTransactions(startDate, endDate, selectedCategory);
       });
     }
+  }
+
+  void _onCategoryChanged(String? category) {
+    setState(() {
+      selectedCategory = category;
+      _filterTransactions(startDate, endDate, selectedCategory);
+    });
   }
 
   void _showTransactionDetails(Map<String, dynamic> transaction) async {
@@ -119,15 +153,12 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     double totalBalance = totalIncome - totalExpense;
+    List<String> allCategories =
+        ['All'] + _incomeCategories + _expenseCategories;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Budget Tracker'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.filter_list),
-            onPressed: () => _selectDateRange(context),
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -191,6 +222,30 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                DropdownButton<String>(
+                  hint: Text('Filter by Category'),
+                  value: selectedCategory,
+                  onChanged: _onCategoryChanged,
+                  items: allCategories.map((String category) {
+                    return DropdownMenuItem<String>(
+                      value: category == 'All' ? null : category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+                ),
+                ElevatedButton.icon(
+                  icon: Icon(Icons.filter_list),
+                  label: Text('Filter by Date'),
+                  onPressed: () => _selectDateRange(context),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: transactions.length,
@@ -209,8 +264,14 @@ class _HomePageState extends State<HomePage> {
                   background: Container(color: Colors.red),
                   child: ListTile(
                     title: Text(transaction['name']),
-                    subtitle: Text(DateFormat.yMMMd()
-                        .format(DateTime.parse(transaction['date']))),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(DateFormat.yMMMd()
+                            .format(DateTime.parse(transaction['date']))),
+                        Text(transaction['category'] ?? 'No category'),
+                      ],
+                    ),
                     trailing:
                         Text('€${transaction['amount'].toStringAsFixed(2)}'),
                     onTap: () => _showTransactionDetails(transaction),

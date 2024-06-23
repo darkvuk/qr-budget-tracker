@@ -18,7 +18,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'budget_tracker.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // Increment the version number
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE transactions (
@@ -26,9 +26,15 @@ class DatabaseHelper {
             type TEXT,
             date TEXT,
             name TEXT,
-            amount REAL
+            amount REAL,
+            category TEXT
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE transactions ADD COLUMN category TEXT');
+        }
       },
     );
   }

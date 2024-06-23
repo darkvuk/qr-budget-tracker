@@ -19,10 +19,33 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   DateTime _date = DateTime.now();
   String _name = '';
   double _amount = 0.0;
+  String _category = '';
   int? _transactionId;
 
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
+
+  final List<String> _incomeCategories = [
+    'Salary',
+    'Investment',
+    'Gift',
+    'Freelance',
+    'Other Income'
+  ];
+
+  final List<String> _expenseCategories = [
+    'Housing',
+    'Transportation',
+    'Food',
+    'Health',
+    'Personal Care',
+    'Entertainment',
+    'Education',
+    'Credit',
+    'Pet',
+    'Family',
+    'Other Expenses'
+  ];
 
   @override
   void initState() {
@@ -32,6 +55,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       _date = DateTime.parse(widget.transaction!['date']);
       _name = widget.transaction!['name'];
       _amount = widget.transaction!['amount'];
+      _category = widget.transaction!['category'] ?? '';
       _transactionId = widget.transaction!['id'];
 
       _dateController.text = DateFormat('yyyy-MM-dd').format(_date);
@@ -48,6 +72,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     super.dispose();
   }
 
+  String? _validateAmount(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter an amount';
+    }
+    final regex = RegExp(r'^\d+(\.\d{1,2})?$');
+    if (!regex.hasMatch(value)) {
+      return 'Enter a valid amount (e.g., 5, 856, 56.19, 179.5)';
+    }
+    return null;
+  }
+
   void _submitTransaction() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
@@ -56,6 +91,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         'date': _date.toIso8601String(),
         'name': _name,
         'amount': _amount,
+        'category': _category,
       };
       if (_transactionId == null) {
         await _dbHelper.insertTransaction(transaction);
@@ -109,6 +145,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         onChanged: (value) {
                           setState(() {
                             _type = value!;
+                            _category = ''; // Reset category when type changes
                           });
                         },
                       ),
@@ -123,6 +160,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         onChanged: (value) {
                           setState(() {
                             _type = value!;
+                            _category = ''; // Reset category when type changes
                           });
                         },
                       ),
@@ -169,16 +207,40 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 onSaved: (value) {
                   _amount = double.parse(value!);
                 },
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  return null;
-                },
+                validator: _validateAmount,
               ),
               SizedBox(height: 20),
+              Text('Category', style: TextStyle(fontSize: 16)),
+              Wrap(
+                spacing: 8.0,
+                children:
+                    (_type == 'income' ? _incomeCategories : _expenseCategories)
+                        .map((category) => ChoiceChip(
+                              label: Text(category),
+                              selected: _category == category,
+                              onSelected: (selected) {
+                                setState(() {
+                                  _category = selected ? category : '';
+                                });
+                              },
+                            ))
+                        .toList(),
+              ),
+              if (_category.isEmpty &&
+                  _formKey.currentState !=
+                      null) // Display error if category is not selected
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    'Please select a category',
+                    style: TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
+              SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _submitTransaction,
+                onPressed: _category.isEmpty
+                    ? null
+                    : _submitTransaction, // Disable button if category is not selected
                 child: Text(widget.transaction == null ? 'Submit' : 'Update'),
               ),
               SizedBox(height: 20),
