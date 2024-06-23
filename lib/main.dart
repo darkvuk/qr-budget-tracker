@@ -184,7 +184,7 @@ class _HomePageState extends State<HomePage> {
                                     fontWeight: FontWeight.bold,
                                     color: Colors.blue)),
                             SizedBox(height: 5),
-                            Text('€${totalIncome.toStringAsFixed(2)}',
+                            Text('${totalIncome.toStringAsFixed(2)}€',
                                 style: TextStyle(
                                     fontSize: 18, color: Colors.blue)),
                           ],
@@ -197,7 +197,7 @@ class _HomePageState extends State<HomePage> {
                                     fontWeight: FontWeight.bold,
                                     color: Colors.blue)),
                             SizedBox(height: 5),
-                            Text('€${totalExpense.toStringAsFixed(2)}',
+                            Text('${totalExpense.toStringAsFixed(2)}€',
                                 style: TextStyle(
                                     fontSize: 18, color: Colors.blue)),
                           ],
@@ -210,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                                     fontWeight: FontWeight.bold,
                                     color: Colors.blue)),
                             SizedBox(height: 5),
-                            Text('€${totalBalance.toStringAsFixed(2)}',
+                            Text('${totalBalance.toStringAsFixed(2)}€',
                                 style: TextStyle(
                                     fontSize: 18, color: Colors.blue)),
                           ],
@@ -273,7 +273,7 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                     trailing:
-                        Text('€${transaction['amount'].toStringAsFixed(2)}'),
+                        Text('${transaction['amount'].toStringAsFixed(2)}€'),
                     onTap: () => _showTransactionDetails(transaction),
                   ),
                 );
