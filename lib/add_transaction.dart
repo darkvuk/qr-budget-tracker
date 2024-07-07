@@ -306,11 +306,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       : _submitTransaction, // Disable button if category is not selected
                   child: Text(widget.transaction == null ? 'Submit' : 'Update'),
                 ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _scanQRCode,
-                  child: Text('Scan QR Code'),
-                ),
+                SizedBox(height: 20)
               ],
             ),
           ),
